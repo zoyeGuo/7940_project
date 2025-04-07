@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  chatgpt:
+    build:
+      context: .
+      dockerfile: Dockerfile.chatgpt
+    container_name: chatgpt
+    ports:
+      - "5000:5000"
+    environment:
+      - CHATGPT_BASICURL=${CHATGPT_BASICURL}
+      - CHATGPT_MODELNAME=${CHATGPT_MODELNAME}
+      - CHATGPT_APIVERSION=${CHATGPT_APIVERSION}
+      - CHATGPT_ACCESSTOKEN=${CHATGPT_ACCESSTOKEN}
+
+  dbservice:
+    build:
+      context: .
+      dockerfile: Dockerfile.dbservice
+    container_name: dbservice
+    ports:
+      - "6000:6000"
+    environment:
+      - MONGODB_CONNECTIONSTRING=${MONGODB_CONNECTIONSTRING}
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+      - MONGODB_COLLECTION=${MONGODB_COLLECTION}
+
+  telegram:
+    build:
+      context: .
+      dockerfile: Dockerfile.telegram
+    container_name: telegram
+    environment:
+      - TELEGRAM_ACCESS_TOKEN=${TELEGRAM_ACCESS_TOKEN}
+      - CHATGPT_SERVICE_URL=http://chatgpt:5000/submit
+      - DBSERVICE_URL=http://dbservice:6000
+    depends_on:
+      - chatgpt
+      - dbservice

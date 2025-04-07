@@ -1,0 +1,10 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY chatbot_os.py /app/
+
+RUN pip install python-telegram-bot==13.7 urllib3==1.26.18 requests pymongo
+
+CMD ["python", "chatbot_os.py"]
+
