@@ -179,7 +179,7 @@ def message_handler(update: Update, context: CallbackContext):
     # If not in information collection state, perform intent analysis
     intent = intent_analysis(user_input)
     if intent == "yes":
-        update.message.reply_text("I can help you find other csgo players. Please provide your Game ID, Rank, and Contact Information.")
+        update.message.reply_text("I can help you find other csgo players. Please provide your Game ID, Rank(1-10), and Contact Information.")
         context.user_data["expecting_game_info"] = True
         return
 
