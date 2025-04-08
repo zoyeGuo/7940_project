@@ -8,10 +8,10 @@ from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-
+# Get configuration from environment variables
 TELEGRAM_ACCESS_TOKEN = os.environ.get("TELEGRAM_ACCESS_TOKEN")
-CHATGPT_SERVICE_URL = os.environ.get("CHATGPT_SERVICE_URL")  
-DBSERVICE_URL = os.environ.get("DBSERVICE_URL")             
+CHATGPT_SERVICE_URL = os.environ.get("CHATGPT_SERVICE_URL")  # e.g. http://chatgpt:5000/submit
+DBSERVICE_URL = os.environ.get("DBSERVICE_URL")              # e.g. http://dbservice:6000
 
 if not TELEGRAM_ACCESS_TOKEN or not CHATGPT_SERVICE_URL or not DBSERVICE_URL:
     logging.error("Missing required environment variables: TELEGRAM_ACCESS_TOKEN, CHATGPT_SERVICE_URL, and DBSERVICE_URL")
@@ -158,13 +158,14 @@ def message_handler(update: Update, context: CallbackContext):
         if "error" in db_result:
             update.message.reply_text("Error inserting data into the database: " + db_result["error"])
         else:
-            # Query DB for users with the same rank
+            # Query DB for users with the same rank and filter out the current user
             rank = complete_info.get("rank")
             if rank:
                 similar_users = db_query(rank)
-                if similar_users:
+                filtered_users = [u for u in similar_users if u.get("game_id") != game_id]
+                if filtered_users:
                     reply = "Found the following users with the same rank:\n"
-                    for u in similar_users:
+                    for u in filtered_users:
                         reply += f"Game ID: {u.get('game_id')}, Rank: {u.get('rank')}, Contact: {u.get('contact')}\n"
                 else:
                     reply = "No users with the same rank were found."
@@ -179,7 +180,7 @@ def message_handler(update: Update, context: CallbackContext):
     # If not in information collection state, perform intent analysis
     intent = intent_analysis(user_input)
     if intent == "yes":
-        update.message.reply_text("I can help you find other csgo players. Please provide your Game ID, Rank(1-10), and Contact Information.")
+        update.message.reply_text("I can help you find other csgo players. Please provide your Game ID, Rank (1-10), and Contact Information.")
         context.user_data["expecting_game_info"] = True
         return
 
